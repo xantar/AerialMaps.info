@@ -1,0 +1,135 @@
+<% Map.refresh %>
+
+<% if @map.processing==true %>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <tr class="success"><td style="text-align:center;"><h1 style="margin-top:0;"><span class="label label-success">Map Being Processed</span></h1></td></tr>
+    </table>
+  </div>
+<% end %>
+
+<div class="page-header">
+<h1>Editing <small><%= @map.title %></small></h1>
+</div>
+
+
+<div class="row">
+
+<div class="col-xs-12 col-md-4">
+<%= form_for(@map) do |f| %>
+  <% if @map.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@map.errors.count, "error") %> prohibited this map from being saved:</h2>
+
+      <ul>
+      <% @map.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :mappping_method %><br>
+    <%= f.collection_select :mapping_method_id, MappingMethod.all, :id, :name  %>
+  </div>
+  
+  <div class="form-group">
+    <%= f.label :mappping_level %><br>
+    <%= f.collection_select :mapping_level_id, MappingLevel.all, :id, :name  %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :latitude %><br>
+    <%= f.text_field :latitude %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :longitude %><br>
+    <%= f.text_field :longitude %>
+  </div>
+
+  <div class="form-group">
+    <%= f.hidden_field :image_uid %>
+  </div>
+  <div class="form-group">
+    <%= f.hidden_field :user_id, :value => params[:user_id] %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label "Add to Gallery" %> <%= f.check_box :gallery %>
+    <%= f.label "GPS in Gallery" %> <%= f.check_box :gallery_gps %>
+  </div>
+  <div class="form-group">
+    <%= f.label "Sharable Link" %> <%= f.check_box :public %>
+    <%= f.label "GPS in Link" %> <%= f.check_box :public_gps %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
+</div>
+
+<div class="col-xs-12 col-md-8">
+<% if @map.complete == true %>
+  <h4><strong style="vertical-align:top;">Map</strong></h4>
+  <strong style="vertical-align:top;">Bearing</strong>   <small><%= Float(@map.bearing).to_int %>&deg;<%= ((Float(@map.bearing)-Float(@map.bearing).to_int)*60).to_int %>'<%= ((((Float(@map.bearing)-Float(@map.bearing).to_int)*60)-(((Float(@map.bearing)-Float(@map.bearing).to_int)*60).to_int))*60).to_int %>''</small><br>
+<% if @map.processing==true %>
+  <strong style="vertical-align:top;"><span class="label label-danger">Map Rotation not available while Map is being Processed</span></strong>
+<% end %>
+<table>
+<tr>
+<td>
+<% if @map.processing==true %>
+<% else %>
+<%= link_to 'Rotate -15&deg;'.html_safe, rotate_url(@map.user.id,@map,-15) %><br><br>
+<%= link_to 'Rotate -45&deg;'.html_safe, rotate_url(@map.user.id,@map,-45) %><br><br>
+<%= link_to 'Rotate -90&deg;'.html_safe, rotate_url(@map.user.id,@map,-90) %>
+<% end %>
+</td>
+<td> 
+<p>
+  <a href= <%= @map.image_uid %> > <img src="<%= @map.thumbnail_uid %>"></a>
+</p>
+</td>
+<td>
+<% if @map.processing==true %>
+<% else %>
+<%= link_to 'Rotate 15&deg;'.html_safe, rotate_url(@map.user.id,@map,15) %><br><br>
+<%= link_to 'Rotate 45&deg;'.html_safe, rotate_url(@map.user.id,@map,45) %><br><br>
+<%= link_to 'Rotate 90&deg;'.html_safe, rotate_url(@map.user.id,@map,90) %>
+<% end %>
+</td>
+</tr>
+</table>
+<% end %>
+</div>
+
+<div class="navbar navbar-default navbar-fixed-bottom">
+  <div class="container">
+    <ul class="nav navbar-nav">
+      <li><%= link_to 'Back to Maps', user_maps_path %></li>
+      <li><%= link_to "Show #{@map.title}", user_map_path %></li>
+    </ul>
+  </div>
+</div>
+
+<% if @map.processing == true %>
+<script>
+setTimeout(function(){
+   window.location.reload(1);
+}, 20000);
+</script>
+<% end %>
+<% if @map.queued == true %>
+  <script>
+  setTimeout(function(){
+     window.location.reload(1);
+  }, 60000);
+  </script>
+<% end %>

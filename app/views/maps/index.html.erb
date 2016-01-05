@@ -1,0 +1,124 @@
+<% if current_user.maps.count >0 %>
+<div class="page-header">
+  <h1><%= "#{current_user.name}'s Maps" %></h1>
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th width="20%"></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <% @maps.each do |map| %>
+      <% if map.processing == true %>
+        <tr class="success">
+      <% else %>
+        <% if map.queued == true %>
+	  <tr class="warning">
+        <% else %>
+          <% if map.failed == true %>
+            <tr class="danger">
+          <% else %>
+  	 	    <% if map.complete == true %>
+              <tr class="info">
+            <% else %>
+              <tr>
+            <% end %>
+		  <% end %>
+        <% end %>
+      <% end %>
+        <td></td>
+        <td style="vertical-align:middle;"><h3 style="margin-top:5px; margin-bottom:5px;"><%= "#{map.title}" %></h3></td>
+        <td style="text-align:center;">
+        <% if map.processing == true %>
+          <h3 style="margin-top:5px; margin-bottom:5px; text-align:center;"><small><%= map.checkStatus %></small></h3>
+  		  <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="<%= map.status %>" aria-valuemin="0" aria-valuemax="8" style="width: <%= (Float(map.status)/8)*100 %>%;">
+            </div>
+          </div>
+        <% end %>
+
+        <% if map.queued == true %>
+          <h3 style="margin-top:5px; margin-bottom:5px;"><small>Map Queued</small></h3>
+        <% end %>
+
+		<% if map.failed == true %>
+          <h3 style="margin-top:5px; margin-bottom:5px;"><small><%= map.checkStatus %> Failed</small></h3>
+        <% end %>
+		
+        <% if map.complete == true && map.processing == false && map.failed == false %>
+          <% if map.generated_at %>
+            <h3 style="margin-top:5px; margin-bottom:5px;"><small><%= time_ago_in_words(map.generated_at) %> ago</small></h3>
+          <% end %>
+        <% end %>
+
+        </td>
+        <td style="vertical-align:middle;">
+          <div class="btn-group btn-group-sm" role="group" aria-label="Small button group">
+			<%= link_to 'Show', user_map_url(map.user.id,map), class: "btn btn-info" %>
+			<%= link_to 'Edit', edit_user_map_url(map.user.id,map), class: "btn btn-primary" %>
+      <% if map.processing == true || map.queued == true %>
+        <%= link_to 'Cancel', cancel_url(map.user.id,map), class: "btn btn-warning", data: { confirm: 'Are you sure?' } %>
+      <% else %>
+        <%= link_to 'Destroy', user_map_url(map.user.id,map), class: "btn btn-danger", method: :delete, data: { confirm: 'Are you sure?' } %>
+      <% end %>
+			<% if map.processing != true && map.complete == false && map.queued == false %>
+				<%= link_to 'Add Photos', new_user_map_photo_multiple_url(map.user.id,map), class: "btn 	btn-success" %>
+			<% end %>
+			<% if map.photos.count > 1 %>
+				<% if map.failed == false %>
+          <% if map.queued == false && map.processing == false %>
+            <%= link_to 'Generate', generate_url(map.user.id,map), class: "btn btn-success", data: { confirm: 'Are you sure?' } %>
+          <% end %>
+        <% else %>
+        <%= link_to 'Restart', generate_url(map.user.id,map), class: "btn btn-success", data: { confirm: 'Are you sure you want to restart?' } %>
+        <%= link_to 'Resume', retry_url(map.user.id,map), class: "btn btn-warning", data: { confirm: 'Are you sure you want to resume?' } %>
+        <% end %>
+			<% end %>
+          </div>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+</div>
+<% else %>
+
+<div class="row"><div class="col-md-offset-2"><h1> Hello <%= "#{current_user.name}" %></h1></div></div>
+<div class="row"><div class="col-md-offset-3"><h2><small>Let's get started by <strong><%= link_to 'creating a Map project', new_user_map_path %></strong></small></h2></div></div>
+
+
+<% end %>
+
+
+<div class="navbar navbar-default navbar-fixed-bottom">
+  <div class="container">
+    <ul class="nav navbar-nav">
+      <li><%= link_to 'New Map', new_user_map_path %></li>
+    </ul>
+  </div>
+</div>
+
+<% if Map.where( processing: true ).count > 0 %>
+<script>
+setTimeout(function(){
+   window.location.reload(1);
+}, 60000);
+</script>
+<% else %>
+  <% if Map.where( queued: true ).count > 0 %>
+    <script>
+    setTimeout(function(){
+       window.location.reload(1);
+    }, 60000);
+    </script>
+  <% end %>
+<% end %>
+
